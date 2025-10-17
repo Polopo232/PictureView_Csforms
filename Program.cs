@@ -16,7 +16,7 @@ namespace PictureView
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Picture());
+            Application.Run(new Math());
         }
     }
 }
