@@ -43,7 +43,7 @@ namespace PictureView
         {
             label1 = new Label()
             {
-                Text = "Jäänud aeg",
+                Text = "Time Left",
                 Font = new Font("Microsoft Sans Serif", 15.75F),
                 Location = new Point(165, 14),
                 AutoSize = true
