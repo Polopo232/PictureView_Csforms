@@ -216,6 +216,11 @@ namespace PictureView
         {
             NumericUpDown box = sender as NumericUpDown;
 
+            if (box.Value == 0)
+            {
+                box.BackColor = SystemColors.Window;
+                return;
+            }
             if (box == sum)
                 box.BackColor = (addend1 + addend2 == sum.Value) ? Color.LightGreen : Color.LightCoral;
             else if (box == difference)
@@ -225,7 +230,6 @@ namespace PictureView
             else if (box == quotientBox)
                 box.BackColor = (dividend / divisor == quotientBox.Value) ? Color.LightGreen : Color.LightCoral;
 
-            // Добавляем бонусное время за правильный ответ
             if ((box == sum && addend1 + addend2 == sum.Value) ||
                 (box == difference && minuend - subtrahend == difference.Value) ||
                 (box == product && multiplicand * multiplier == product.Value) ||
@@ -270,9 +274,16 @@ namespace PictureView
         private void ResetHighlights()
         {
             sum.BackColor = SystemColors.Window;
+            sum.Value = 0;
+
             difference.BackColor = SystemColors.Window;
+            difference.Value = 0;
+
             product.BackColor = SystemColors.Window;
+            product.Value = 0;
+
             quotientBox.BackColor = SystemColors.Window;
+            quotientBox.Value = 0;
         }
     }
 }
