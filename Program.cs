@@ -16,7 +16,7 @@ namespace PictureView
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Picture()); // Change 'Math', if you would like to run a different form
+            Application.Run(new Math()); // Change, if you would like to run a different form
         }
     }
 }
