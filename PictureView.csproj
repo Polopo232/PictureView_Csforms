@@ -49,6 +49,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Match.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Match.Designer.cs">
+      <DependentUpon>Match.cs</DependentUpon>
+    </Compile>
     <Compile Include="Picture.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -63,6 +69,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Match.resx">
+      <DependentUpon>Match.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Math.resx">
       <DependentUpon>Math.cs</DependentUpon>
     </EmbeddedResource>
