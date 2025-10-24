@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace PictureView
@@ -9,15 +8,10 @@ namespace PictureView
     {
         Random randomizer = new Random();
 
-        int addend1;
-        int addend2;
-        int minuend;
-        int subtrahend;
-        int multiplicand;
-        int multiplier;
-        int dividend;
-        int divisor;
+        int addend1, addend2, minuend, subtrahend;
+        int multiplicand, multiplier, dividend, divisor;
         int timeLeft;
+        int bonusTime;
 
         Label timeLabel, label1;
         Label plusLeftLabel, plusRightLabel, label2, label3;
@@ -41,6 +35,7 @@ namespace PictureView
 
         private void InitializeComponents()
         {
+            // Таймер
             label1 = new Label()
             {
                 Text = "Time Left",
@@ -86,7 +81,7 @@ namespace PictureView
             label13 = MakeLabel("=", 248, 220);
             quotientBox = MakeNumeric(314, 229);
 
-            // start
+            // start button
             startButton = new Button()
             {
                 Text = "Alusta viktoriini",
@@ -108,6 +103,12 @@ namespace PictureView
             timer = new Timer();
             timer.Interval = 1000;
             timer.Tick += TimerEvent;
+
+            // Подписка на изменения ответов
+            sum.ValueChanged += AnswerChanged;
+            difference.ValueChanged += AnswerChanged;
+            product.ValueChanged += AnswerChanged;
+            quotientBox.ValueChanged += AnswerChanged;
         }
 
         private Label MakeLabel(string text, int x, int y)
@@ -145,12 +146,9 @@ namespace PictureView
 
             int maxValue;
 
-            if (difficultyChoice == DialogResult.Yes)
-                maxValue = 11;
-            else if (difficultyChoice == DialogResult.No)
-                maxValue = 51;
-            else
-                maxValue = 101;
+            if (difficultyChoice == DialogResult.Yes) { maxValue = 11; bonusTime = 1; }
+            else if (difficultyChoice == DialogResult.No) { maxValue = 51; bonusTime = 5; }
+            else { maxValue = 101; bonusTime = 10; }
 
             ResetHighlights();
             StartTheQuiz(maxValue);
@@ -186,6 +184,7 @@ namespace PictureView
             timeLeft = 30;
             timeLabel.Text = "30 sekundid";
             timer.Start();
+            startButton.Enabled = false;
         }
 
         private void TimerEvent(object sender, EventArgs e)
@@ -209,6 +208,37 @@ namespace PictureView
                 HighlightAnswers();
                 ShowAnswers();
                 MessageBox.Show("Sa ei jõudnud õigeks ajaks valmis.", "Vabandust!");
+                startButton.Enabled = true;
+            }
+        }
+
+        private void AnswerChanged(object sender, EventArgs e)
+        {
+            NumericUpDown box = sender as NumericUpDown;
+
+            if (box == sum)
+                box.BackColor = (addend1 + addend2 == sum.Value) ? Color.LightGreen : Color.LightCoral;
+            else if (box == difference)
+                box.BackColor = (minuend - subtrahend == difference.Value) ? Color.LightGreen : Color.LightCoral;
+            else if (box == product)
+                box.BackColor = (multiplicand * multiplier == product.Value) ? Color.LightGreen : Color.LightCoral;
+            else if (box == quotientBox)
+                box.BackColor = (dividend / divisor == quotientBox.Value) ? Color.LightGreen : Color.LightCoral;
+
+            // Добавляем бонусное время за правильный ответ
+            if ((box == sum && addend1 + addend2 == sum.Value) ||
+                (box == difference && minuend - subtrahend == difference.Value) ||
+                (box == product && multiplicand * multiplier == product.Value) ||
+                (box == quotientBox && dividend / divisor == quotientBox.Value))
+            {
+                timeLeft += bonusTime;
+                timeLabel.Text = timeLeft + " sekundid";
+            }
+
+            if (CheckAnswers())
+            {
+                timer.Stop();
+                MessageBox.Show("Sa vastasid kõikidele küsimustele õigesti!", "Õnnitlused!");
                 startButton.Enabled = true;
             }
         }
