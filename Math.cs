@@ -40,7 +40,6 @@ namespace PictureView
 
         private void InitializeComponents()
         {
-            // Таймер
             label1 = new Label()
             {
                 Text = "Time Left",
@@ -109,6 +108,7 @@ namespace PictureView
             timer.Interval = 1000;
             timer.Tick += TimerEvent;
         }
+
         private Label MakeLabel(string text, int x, int y)
         {
             return new Label()
@@ -133,31 +133,48 @@ namespace PictureView
 
         private void startButton_Click(object sender, EventArgs e)
         {
-            StartTheQuiz();
+            DialogResult difficultyChoice = MessageBox.Show(
+                "Выберите уровень сложности:\nYes = Лёгкий\nNo = Средний\nCancel = Сложный",
+                "Выбор сложности",
+                MessageBoxButtons.YesNoCancel,
+                MessageBoxIcon.Question
+            );
+
+            int maxValue;
+
+            if (difficultyChoice == DialogResult.Yes)
+                maxValue = 11;
+            else if (difficultyChoice == DialogResult.No)
+                maxValue = 51;
+            else
+                maxValue = 101;
+
+            ResetHighlights(); // сброс подсветки от предыдущего раунда
+            StartTheQuiz(maxValue);
         }
 
-        public void StartTheQuiz()
+        public void StartTheQuiz(int max)
         {
-            addend1 = randomizer.Next(51);
-            addend2 = randomizer.Next(51);
+            addend1 = randomizer.Next(max);
+            addend2 = randomizer.Next(max);
             plusLeftLabel.Text = addend1.ToString();
             plusRightLabel.Text = addend2.ToString();
             sum.Value = 0;
 
-            minuend = randomizer.Next(1, 101);
+            minuend = randomizer.Next(1, max * 2);
             subtrahend = randomizer.Next(1, minuend);
             minusLeftLabel.Text = minuend.ToString();
             minusRightLabel.Text = subtrahend.ToString();
             difference.Value = 0;
 
-            multiplicand = randomizer.Next(2, 11);
-            multiplier = randomizer.Next(2, 11);
+            multiplicand = randomizer.Next(2, System.Math.Min(11, max));
+            multiplier = randomizer.Next(2, System.Math.Min(11, max));
             timesLeftLabel.Text = multiplicand.ToString();
             timesRightLabel.Text = multiplier.ToString();
             product.Value = 0;
 
-            divisor = randomizer.Next(2, 11);
-            int temporaryQuotient = randomizer.Next(2, 11);
+            divisor = randomizer.Next(2, System.Math.Min(11, max));
+            int temporaryQuotient = randomizer.Next(2, System.Math.Min(11, max));
             dividend = divisor * temporaryQuotient;
             dividedLeftLabel.Text = dividend.ToString();
             dividedRightLabel.Text = divisor.ToString();
@@ -173,6 +190,7 @@ namespace PictureView
             if (CheckAnswers())
             {
                 timer.Stop();
+                HighlightAnswers();
                 MessageBox.Show("Sa vastasid kõikidele küsimustele õigesti!", "Õnnitlused!");
                 startButton.Enabled = true;
             }
@@ -185,8 +203,9 @@ namespace PictureView
             {
                 timer.Stop();
                 timeLabel.Text = "Aeg on otsas!";
-                MessageBox.Show("Sa ei jõudnud õigeks ajaks valmis.", "Vabandust!");
+                HighlightAnswers();
                 ShowAnswers();
+                MessageBox.Show("Sa ei jõudnud õigeks ajaks valmis.", "Vabandust!");
                 startButton.Enabled = true;
             }
         }
@@ -205,6 +224,22 @@ namespace PictureView
             difference.Value = minuend - subtrahend;
             product.Value = multiplicand * multiplier;
             quotientBox.Value = dividend / divisor;
+        }
+
+        private void HighlightAnswers()
+        {
+            sum.BackColor = (addend1 + addend2 == sum.Value) ? Color.LightGreen : Color.LightCoral;
+            difference.BackColor = (minuend - subtrahend == difference.Value) ? Color.LightGreen : Color.LightCoral;
+            product.BackColor = (multiplicand * multiplier == product.Value) ? Color.LightGreen : Color.LightCoral;
+            quotientBox.BackColor = (dividend / divisor == quotientBox.Value) ? Color.LightGreen : Color.LightCoral;
+        }
+
+        private void ResetHighlights()
+        {
+            sum.BackColor = SystemColors.Window;
+            difference.BackColor = SystemColors.Window;
+            product.BackColor = SystemColors.Window;
+            quotientBox.BackColor = SystemColors.Window;
         }
     }
 }
