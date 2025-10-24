@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace PictureView
@@ -29,7 +30,7 @@ namespace PictureView
 
         public Math()
         {
-            this.Text = "Math Quiz";
+            this.Text = "Matemaatika viktoriin";
             this.ClientSize = new Size(490, 400);
             this.FormBorderStyle = FormBorderStyle.Fixed3D;
             this.MaximizeBox = false;
@@ -42,7 +43,7 @@ namespace PictureView
         {
             label1 = new Label()
             {
-                Text = "Time Left",
+                Text = "Jäänud aeg",
                 Font = new Font("Microsoft Sans Serif", 15.75F),
                 Location = new Point(165, 14),
                 AutoSize = true
@@ -88,7 +89,7 @@ namespace PictureView
             // start
             startButton = new Button()
             {
-                Text = "Start the quiz",
+                Text = "Alusta viktoriini",
                 Font = new Font("Microsoft Sans Serif", 14F),
                 Location = new Point(187, 304),
                 AutoSize = true
@@ -127,15 +128,17 @@ namespace PictureView
             {
                 Font = new Font("Microsoft Sans Serif", 18F),
                 Location = new Point(x, y),
-                Size = new Size(120, 35)
+                Size = new Size(120, 35),
+                Minimum = 0,
+                Maximum = 1000
             };
         }
 
         private void startButton_Click(object sender, EventArgs e)
         {
             DialogResult difficultyChoice = MessageBox.Show(
-                "Выберите уровень сложности:\nYes = Лёгкий\nNo = Средний\nCancel = Сложный",
-                "Выбор сложности",
+                "Valige raskusaste:\nYes = Lihtne\nNo = Keskmine\nCancel = Raske",
+                "Raskusastme valik",
                 MessageBoxButtons.YesNoCancel,
                 MessageBoxIcon.Question
             );
@@ -149,7 +152,7 @@ namespace PictureView
             else
                 maxValue = 101;
 
-            ResetHighlights(); // сброс подсветки от предыдущего раунда
+            ResetHighlights();
             StartTheQuiz(maxValue);
         }
 
