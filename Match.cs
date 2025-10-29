@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 namespace PictureView
 {
-    public partial class Form1 : Form
+    public partial class Match : Form
     {
         Random random = new Random();
 
@@ -34,7 +34,7 @@ namespace PictureView
                 }
             }
         }
-        public Form1()
+        public Match()
         {
             InitializeComponent();
 

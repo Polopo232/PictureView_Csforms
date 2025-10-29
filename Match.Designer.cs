@@ -1,6 +1,6 @@
 ﻿namespace PictureView
 {
-    partial class Form1
+    partial class Match
     {
         /// <summary>
         /// Required designer variable.
