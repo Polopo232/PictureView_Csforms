@@ -7,6 +7,70 @@ namespace PictureView
 {
     public partial class Match : Form
     {
+
+        private TableLayoutPanel tableLayoutPanel1;
+        private Label[] labels;
+        private Timer timer1;
+
+        public Match()
+        {
+            // Настройки формы
+            this.Text = "Matching Game";
+            this.ClientSize = new Size(534, 511);
+            this.StartPosition = FormStartPosition.CenterScreen;
+
+            // Создаём TableLayoutPanel
+            tableLayoutPanel1 = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = SystemColors.Highlight,
+                CellBorderStyle = TableLayoutPanelCellBorderStyle.Inset,
+                ColumnCount = 4,
+                RowCount = 4
+            };
+
+            // Добавляем равные пропорции столбцов и строк
+            for (int i = 0; i < 4; i++)
+            {
+                tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+                tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
+            }
+
+            // Создаём 16 меток
+            labels = new Label[16];
+            int index = 0;
+
+            for (int row = 0; row < 4; row++)
+            {
+                for (int col = 0; col < 4; col++)
+                {
+                    Label lbl = new Label
+                    {
+                        Dock = DockStyle.Fill,
+                        Font = new Font("Microsoft Sans Serif", 48F),
+                        Text = "C",
+                        TextAlign = ContentAlignment.MiddleCenter,
+                        Name = "label" + (index + 1),
+                    };
+
+                    lbl.Click += label1_Click;
+
+                    labels[index] = lbl;
+                    tableLayoutPanel1.Controls.Add(lbl, col, row);
+                    index++;
+                }
+            }
+
+            // Таймер
+            timer1 = new Timer();
+            timer1.Tick += timer1_Tick;
+
+            // Добавляем всё на форму
+            Controls.Add(tableLayoutPanel1);
+
+            AssignIconsToSquares();
+        }
+
         Label firstClicked = null;
 
         Label secondClicked = null;
@@ -33,13 +97,6 @@ namespace PictureView
                     icons.RemoveAt(randomNumber);
                 }
             }
-        }
-
-        public Match()
-        {
-            InitializeComponent();
-
-            AssignIconsToSquares();
         }
 
         private void label1_Click(object sender, EventArgs e)
