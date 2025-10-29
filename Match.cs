@@ -17,9 +17,10 @@ namespace PictureView
         public Match()
         {
             this.Text = "Matching Game";
-            this.ClientSize = new Size(534, 511);
+            this.ClientSize = new Size(600, 550);
             this.StartPosition = FormStartPosition.CenterScreen;
 
+            // Выбор сложности
             DialogResult difficultyChoice = MessageBox.Show(
                 "Valige raskusaste:\nYes = Lihtne\nNo = Keskmine\nCancel = Raske",
                 "Raskusastme valik",
@@ -31,10 +32,21 @@ namespace PictureView
             else if (difficultyChoice == DialogResult.No) GridSize = 6;
             else GridSize = 10;
 
+            TabControl tabControl = new TabControl { Dock = DockStyle.Fill };
+            TabPage gameTab = new TabPage("Game");
+            TabPage settingsTab = new TabPage("Settings");
+
+            tabControl.TabPages.Add(gameTab);
+            tabControl.TabPages.Add(settingsTab);
+            this.Controls.Add(tabControl);
+
+            // Таблица игры
             tableLayoutPanel1 = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
-                BackColor = SystemColors.Highlight,
+                BackColor = Properties.Settings.Default.PanelColor != Color.Empty
+                            ? Properties.Settings.Default.PanelColor
+                            : SystemColors.Highlight,
                 CellBorderStyle = TableLayoutPanelCellBorderStyle.Inset,
                 ColumnCount = GridSize,
                 RowCount = GridSize
@@ -45,6 +57,8 @@ namespace PictureView
                 tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f / GridSize));
                 tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100f / GridSize));
             }
+
+            gameTab.Controls.Add(tableLayoutPanel1);
 
             labels = new Label[GridSize * GridSize];
             int index = 0;
@@ -60,23 +74,62 @@ namespace PictureView
                         Text = "C",
                         TextAlign = ContentAlignment.MiddleCenter,
                         Name = "label" + (index + 1),
+                        ForeColor = tableLayoutPanel1.BackColor
                     };
-
                     lbl.Click += label1_Click;
-
                     labels[index] = lbl;
                     tableLayoutPanel1.Controls.Add(lbl, col, row);
                     index++;
                 }
             }
 
-            timer1 = new Timer();
-            timer1.Interval = 750;
+            timer1 = new Timer { Interval = 750 };
             timer1.Tick += timer1_Tick;
 
-            Controls.Add(tableLayoutPanel1);
-
             AssignIconsToSquares();
+
+            // Настройки
+            FlowLayoutPanel settingsPanel = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Top,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false,
+                AutoSize = true,
+                Padding = new Padding(10),
+                Margin = new Padding(0, 20, 0, 0)
+            };
+            settingsTab.Controls.Add(settingsPanel);
+
+            Label lblSettings = new Label
+            {
+                Text = "Choose panel color:",
+                AutoSize = true,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Margin = new Padding(0, 0, 0, 10)
+            };
+            settingsPanel.Controls.Add(lblSettings);
+
+            Button btnRed = new Button { Text = "Red", Width = 80, Height = 30, Margin = new Padding(5) };
+            Button btnGreen = new Button { Text = "Green", Width = 80, Height = 30, Margin = new Padding(5) };
+            Button btnBlue = new Button { Text = "Blue", Width = 80, Height = 30, Margin = new Padding(5) };
+            Button btnCustom = new Button { Text = "Custom...", Width = 100, Height = 30, Margin = new Padding(5) };
+
+            btnRed.Click += (s, e) => ChangePanelColor(Color.Red);
+            btnGreen.Click += (s, e) => ChangePanelColor(Color.Green);
+            btnBlue.Click += (s, e) => ChangePanelColor(Color.Blue);
+            btnCustom.Click += (s, e) =>
+            {
+                using (ColorDialog cd = new ColorDialog())
+                {
+                    if (cd.ShowDialog() == DialogResult.OK)
+                        ChangePanelColor(cd.Color);
+                }
+            };
+
+            settingsPanel.Controls.Add(btnRed);
+            settingsPanel.Controls.Add(btnGreen);
+            settingsPanel.Controls.Add(btnBlue);
+            settingsPanel.Controls.Add(btnCustom);
         }
 
         Label firstClicked = null;
@@ -103,7 +156,6 @@ namespace PictureView
             "⚸","⚸","⚹","⚹","⚺","⚺","⚻","⚻",
             "⚼","⚼","⚽","⚽","⚾","⚾"
         };
-
         private void AssignIconsToSquares()
         {
             List<string> iconsCopy = new List<string>(icons);
@@ -138,7 +190,6 @@ namespace PictureView
                 }
             }
         }
-
         private void label1_Click(object sender, EventArgs e)
         {
             if (timer1.Enabled) return;
@@ -172,7 +223,6 @@ namespace PictureView
 
             timer1.Start();
         }
-
         private void timer1_Tick(object sender, EventArgs e)
         {
             timer1.Stop();
@@ -185,7 +235,6 @@ namespace PictureView
             firstClicked = null;
             secondClicked = null;
         }
-
         private void CheckForWinner()
         {
             foreach (Control control in tableLayoutPanel1.Controls)
@@ -216,7 +265,6 @@ namespace PictureView
                 Close();
             }
         }
-
         private void RestartGame()
         {
             tableLayoutPanel1.Controls.Clear();
@@ -250,8 +298,6 @@ namespace PictureView
 
             AssignIconsToSquares();
         }
-
-
         private void Shuffle<T>(List<T> list)
         {
             for (int i = list.Count - 1; i > 0; i--)
@@ -259,6 +305,20 @@ namespace PictureView
                 int j = random.Next(i + 1);
                 (list[i], list[j]) = (list[j], list[i]);
             }
+        }
+
+        private void ChangePanelColor(Color color)
+        {
+            tableLayoutPanel1.BackColor = color;
+
+            foreach (Label lbl in labels)
+            {
+                if (lbl.ForeColor != Color.Black)
+                    lbl.ForeColor = color;
+            }
+
+            Properties.Settings.Default.PanelColor = color;
+            Properties.Settings.Default.Save();
         }
     }
 }
