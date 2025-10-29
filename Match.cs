@@ -311,10 +311,13 @@ namespace PictureView
         {
             tableLayoutPanel1.BackColor = color;
 
+            bool isDark = color.GetBrightness() < 0.5f;
+            Color textColor = isDark ? Color.White : Color.Black;
+
             foreach (Label lbl in labels)
             {
                 if (lbl.ForeColor != Color.Black)
-                    lbl.ForeColor = color;
+                    lbl.ForeColor = textColor;
             }
 
             Properties.Settings.Default.PanelColor = color;
