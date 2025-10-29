@@ -14,35 +14,31 @@ namespace PictureView
 
         public Match()
         {
-            // Настройки формы
             this.Text = "Matching Game";
             this.ClientSize = new Size(534, 511);
             this.StartPosition = FormStartPosition.CenterScreen;
 
-            // Создаём TableLayoutPanel
             tableLayoutPanel1 = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
                 BackColor = SystemColors.Highlight,
                 CellBorderStyle = TableLayoutPanelCellBorderStyle.Inset,
-                ColumnCount = 4,
-                RowCount = 4
+                ColumnCount = 6,
+                RowCount = 6
             };
 
-            // Добавляем равные пропорции столбцов и строк
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 6; i++)
             {
-                tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
-                tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
+                tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.6F));
+                tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 16.6F));
             }
 
-            // Создаём 16 меток
-            labels = new Label[16];
+            labels = new Label[36];
             int index = 0;
 
-            for (int row = 0; row < 4; row++)
+            for (int row = 0; row < 6; row++)
             {
-                for (int col = 0; col < 4; col++)
+                for (int col = 0; col < 6; col++)
                 {
                     Label lbl = new Label
                     {
@@ -61,11 +57,9 @@ namespace PictureView
                 }
             }
 
-            // Таймер
             timer1 = new Timer();
             timer1.Tick += timer1_Tick;
 
-            // Добавляем всё на форму
             Controls.Add(tableLayoutPanel1);
 
             AssignIconsToSquares();
@@ -77,12 +71,26 @@ namespace PictureView
 
 
         Random random = new Random();
-
         List<string> icons = new List<string>()
-    {
-        "❀", "❀", "♙", "♙", "♫", "♫", "♡", "♡",
-        "♢", "♢", "↯", "↯", "★", "★", "℻", "℻"
-    };
+        {
+            "❀","❀","♙","♙","♫","♫","♡","♡",
+            "♢","♢","↯","↯","★","★","℻","℻",
+            "♤","♤","♧","♧","☀","☀","☁","☁",
+            "☂","☂","☃","☃","☯","☯","☮","☮",
+            "☢","☢","☣","☣","☠","☠","⚑","⚑",
+            "⚡","⚡","⚜","⚜","⚙","⚙","⚛","⚛",
+            "⚔","⚔","⚖","⚖","⚗","⚗","⚕","⚕",
+            "⚘","⚘","⚙","⚙","⚚","⚚","⚛","⚛",
+            "⚜","⚜","⚝","⚝","⚞","⚞","⚟","⚟",
+            "⚠","⚠","⚡","⚡","⚢","⚢","⚣","⚣",
+            "⚤","⚤","⚥","⚥","⚦","⚦","⚧","⚧",
+            "⚨","⚨","⚩","⚩","⚪","⚪","⚫","⚫",
+            "⚬","⚬","⚭","⚭","⚮","⚮","⚯","⚯",
+            "⚰","⚰","⚱","⚱","⚲","⚲","⚳","⚳",
+            "⚴","⚴","⚵","⚵","⚶","⚶","⚷","⚷",
+            "⚸","⚸","⚹","⚹","⚺","⚺","⚻","⚻",
+            "⚼","⚼","⚽","⚽","⚾","⚾"
+        };
 
         private void AssignIconsToSquares()
         {
