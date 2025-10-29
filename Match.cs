@@ -12,7 +12,7 @@ namespace PictureView
         private Label[] labels;
         private Timer timer1;
 
-        private int GridSize; // <-- новое имя
+        private int GridSize;
 
         public Match()
         {
