@@ -16,11 +16,11 @@ namespace PictureView
 
         public Match()
         {
-            this.Text = "Matching Game";
+            this.Text = "Sobivusmäng";
             this.ClientSize = new Size(600, 550);
             this.StartPosition = FormStartPosition.CenterScreen;
 
-            // Выбор сложности
+            // Select difficult
             DialogResult difficultyChoice = MessageBox.Show(
                 "Valige raskusaste:\nYes = Lihtne\nNo = Keskmine\nCancel = Raske",
                 "Raskusastme valik",
@@ -33,8 +33,8 @@ namespace PictureView
             else GridSize = 10;
 
             TabControl tabControl = new TabControl { Dock = DockStyle.Fill };
-            TabPage gameTab = new TabPage("Game");
-            TabPage settingsTab = new TabPage("Settings");
+            TabPage gameTab = new TabPage("Mäng");
+            TabPage settingsTab = new TabPage("Seaded");
 
             tabControl.TabPages.Add(gameTab);
             tabControl.TabPages.Add(settingsTab);
@@ -87,7 +87,7 @@ namespace PictureView
 
             AssignIconsToSquares();
 
-            // Настройки
+            // Settings
             FlowLayoutPanel settingsPanel = new FlowLayoutPanel
             {
                 Dock = DockStyle.Top,
@@ -101,16 +101,16 @@ namespace PictureView
 
             Label lblSettings = new Label
             {
-                Text = "Choose panel color:",
+                Text = "Vali paneeli värv:",
                 AutoSize = true,
                 TextAlign = ContentAlignment.MiddleLeft,
                 Margin = new Padding(0, 0, 0, 10)
             };
             settingsPanel.Controls.Add(lblSettings);
 
-            Button btnBlack = new Button { Text = "Black", Width = 80, Height = 30, Margin = new Padding(5) };
-            Button btnPink = new Button { Text = "Pink", Width = 80, Height = 30, Margin = new Padding(5) };
-            Button btnBlue = new Button { Text = "Blue", Width = 80, Height = 30, Margin = new Padding(5) };
+            Button btnBlack = new Button { Text = "Must", Width = 80, Height = 30, Margin = new Padding(5) };
+            Button btnPink = new Button { Text = "Roosa", Width = 80, Height = 30, Margin = new Padding(5) };
+            Button btnBlue = new Button { Text = "Sinine", Width = 80, Height = 30, Margin = new Padding(5) };
 
 
             btnBlack.Click += (s, e) => ChangePanelColor(Color.Black);
@@ -243,9 +243,9 @@ namespace PictureView
             }
 
             DialogResult result = MessageBox.Show(
-                "You matched all the icons!\n" +
-                $"You made {movesCount} turns.\n\nDo you want to play again?",
-                "Congratulations",
+                "Sa leidsid kõik ikoonid!\n" +
+                $"Sa tegid {movesCount} käiku.\n\nKas soovid uuesti mängida?",
+                "Õnnitlused",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Information
             );
