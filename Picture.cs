@@ -34,7 +34,7 @@ namespace PictureView
 
         private void InitializeComponents()
         {
-            // Верхняя панель для кнопок
+            // Above panel with buttons and checkboxes
             FlowLayoutPanel topPanel = new FlowLayoutPanel
             {
                 Dock = DockStyle.Top,
@@ -44,7 +44,7 @@ namespace PictureView
                 AutoSize = true
             };
 
-            // Кнопки
+            // Buttons
             showButton = new Button { Text = "Show" };
             clearButton = new Button { Text = "Clear" };
             backgroundButton = new Button { Text = "Background" };
@@ -54,16 +54,16 @@ namespace PictureView
             saveButton = new Button { Text = "Save" };
             colorButton = new Button { Text = "Pen Color" };
 
-            // Чекбоксы
+            // Checkboxes
             stretchCheckBox = new CheckBox { Text = "Stretch", AutoSize = true };
             drawCheckBox = new CheckBox { Text = "Draw", AutoSize = true };
 
-            // Размер кнопок
+            // Size buttons uniformly
             int buttonWidth = 80, buttonHeight = 30;
             foreach (Button b in new[] { showButton, clearButton, backgroundButton, closeButton, zoomInButton, zoomOutButton, saveButton, colorButton })
                 b.Size = new Size(buttonWidth, buttonHeight);
 
-            // Добавляем в панель
+            // Add a panel
             topPanel.Controls.Add(zoomInButton);
             topPanel.Controls.Add(zoomOutButton);
             topPanel.Controls.Add(showButton);
@@ -76,7 +76,7 @@ namespace PictureView
 
             Controls.Add(topPanel);
 
-            // Панель для PictureBox с прокруткой
+            // Panel for PictureBox
             picturePanel = new Panel
             {
                 Dock = DockStyle.Fill,
@@ -92,7 +92,6 @@ namespace PictureView
             picturePanel.Controls.Add(pictureBox);
             Controls.Add(picturePanel);
 
-            // Диалоги
             openFileDialog = new OpenFileDialog
             {
                 Title = "Select a picture",
@@ -100,7 +99,6 @@ namespace PictureView
             };
             colorDialog = new ColorDialog();
 
-            // Подписки на события
             showButton.Click += ShowButton_Click;
             clearButton.Click += (s, e) => pictureBox.Image = null;
             backgroundButton.Click += BackgroundButton_Click;
@@ -112,7 +110,7 @@ namespace PictureView
             stretchCheckBox.CheckedChanged += StretchCheckBox_CheckedChanged;
             drawCheckBox.CheckedChanged += DrawCheckBox_CheckedChanged;
 
-            // Рисование мышью
+            // Draw by mouse events
             pictureBox.MouseDown += PictureBox_MouseDown;
             pictureBox.MouseMove += PictureBox_MouseMove;
             pictureBox.MouseUp += PictureBox_MouseUp;
@@ -126,7 +124,15 @@ namespace PictureView
 
         private void StretchCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            pictureBox.SizeMode = stretchCheckBox.Checked ? PictureBoxSizeMode.StretchImage : PictureBoxSizeMode.Zoom;
+            if (stretchCheckBox.Checked)
+            {
+                pictureBox.SizeMode = PictureBoxSizeMode.StretchImage;
+            }
+            else
+            {
+                pictureBox.SizeMode = PictureBoxSizeMode.Normal;
+            }
+            ApplyZoom();
         }
 
         private void ShowButton_Click(object sender, EventArgs e)
@@ -162,8 +168,33 @@ namespace PictureView
         private void ApplyZoom()
         {
             if (pictureBox.Image == null) return;
-            pictureBox.Width = (int)(pictureBox.Image.Width * zoomFactor);
-            pictureBox.Height = (int)(pictureBox.Image.Height * zoomFactor);
+
+            if (stretchCheckBox.Checked)
+            {
+                pictureBox.SizeMode = PictureBoxSizeMode.StretchImage;
+
+                int newWidth = (int)(pictureBox.Image.Width * zoomFactor);
+                int newHeight = (int)(pictureBox.Image.Height * zoomFactor);
+
+                Size panelSize = picturePanel.ClientSize;
+                float scaleX = (float)panelSize.Width / newWidth;
+                float scaleY = (float)panelSize.Height / newHeight;
+                float scale = System.Math.Min(scaleX, scaleY);
+
+                int displayWidth = (int)(newWidth * scaleX);
+                int displayHeight = (int)(newHeight * scaleY);
+
+                pictureBox.Size = panelSize;
+            }
+            else
+            {
+                pictureBox.SizeMode = PictureBoxSizeMode.Normal;
+                int w = (int)(pictureBox.Image.Width * zoomFactor);
+                int h = (int)(pictureBox.Image.Height * zoomFactor);
+                pictureBox.Size = new Size(w, h);
+            }
+
+            pictureBox.Invalidate();
         }
 
         private void SaveButton_Click(object sender, EventArgs e)
@@ -191,7 +222,6 @@ namespace PictureView
             }
         }
 
-        // Рисование мышью
         private void PictureBox_MouseDown(object sender, MouseEventArgs e)
         {
             if (!drawingEnabled || pictureBox.Image == null) return;
