@@ -40,7 +40,6 @@ namespace PictureView
             tabControl.TabPages.Add(settingsTab);
             this.Controls.Add(tabControl);
 
-            // Таблица игры
             tableLayoutPanel1 = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
@@ -109,27 +108,20 @@ namespace PictureView
             };
             settingsPanel.Controls.Add(lblSettings);
 
-            Button btnRed = new Button { Text = "Red", Width = 80, Height = 30, Margin = new Padding(5) };
-            Button btnGreen = new Button { Text = "Green", Width = 80, Height = 30, Margin = new Padding(5) };
+            Button btnBlack = new Button { Text = "Black", Width = 80, Height = 30, Margin = new Padding(5) };
+            Button btnPink = new Button { Text = "Pink", Width = 80, Height = 30, Margin = new Padding(5) };
             Button btnBlue = new Button { Text = "Blue", Width = 80, Height = 30, Margin = new Padding(5) };
-            Button btnCustom = new Button { Text = "Custom...", Width = 100, Height = 30, Margin = new Padding(5) };
 
-            btnRed.Click += (s, e) => ChangePanelColor(Color.Red);
-            btnGreen.Click += (s, e) => ChangePanelColor(Color.Green);
+
+            btnBlack.Click += (s, e) => ChangePanelColor(Color.Black);
+            btnPink.Click += (s, e) => ChangePanelColor(Color.Pink);
             btnBlue.Click += (s, e) => ChangePanelColor(Color.Blue);
-            btnCustom.Click += (s, e) =>
-            {
-                using (ColorDialog cd = new ColorDialog())
-                {
-                    if (cd.ShowDialog() == DialogResult.OK)
-                        ChangePanelColor(cd.Color);
-                }
-            };
 
-            settingsPanel.Controls.Add(btnRed);
-            settingsPanel.Controls.Add(btnGreen);
+
+            settingsPanel.Controls.Add(btnBlack);
+            settingsPanel.Controls.Add(btnPink);
             settingsPanel.Controls.Add(btnBlue);
-            settingsPanel.Controls.Add(btnCustom);
+
         }
 
         Label firstClicked = null;
@@ -185,7 +177,8 @@ namespace PictureView
                 if (iconLabel != null)
                 {
                     iconLabel.Text = gameIcons[i];
-                    iconLabel.ForeColor = iconLabel.BackColor;
+                    iconLabel.ForeColor = tableLayoutPanel1.BackColor;
+                    iconLabel.BackColor = tableLayoutPanel1.BackColor;
                     i++;
                 }
             }
@@ -197,22 +190,23 @@ namespace PictureView
             Label clickedLabel = sender as Label;
             if (clickedLabel == null) return;
 
-            if (clickedLabel.ForeColor == Color.Black)
+            if (clickedLabel.ForeColor == Color.White)
                 return;
 
             if (firstClicked == null)
             {
                 firstClicked = clickedLabel;
-                firstClicked.ForeColor = Color.Black;
+                firstClicked.ForeColor = Color.White;
                 return;
             }
 
             movesCount++;
 
             secondClicked = clickedLabel;
-            secondClicked.ForeColor = Color.Black;
+            secondClicked.ForeColor = Color.White;
 
             CheckForWinner();
+
 
             if (firstClicked != null && secondClicked != null && firstClicked.Text == secondClicked.Text)
             {
@@ -227,10 +221,14 @@ namespace PictureView
         {
             timer1.Stop();
 
-            if (firstClicked == null) return;
-
-            firstClicked.ForeColor = firstClicked.BackColor;
-            secondClicked.ForeColor = secondClicked.BackColor;
+            if (firstClicked != null)
+            {
+                firstClicked.ForeColor = tableLayoutPanel1.BackColor;
+            }
+            if (secondClicked != null)
+            {
+                secondClicked.ForeColor = tableLayoutPanel1.BackColor;
+            }
 
             firstClicked = null;
             secondClicked = null;
@@ -240,12 +238,8 @@ namespace PictureView
             foreach (Control control in tableLayoutPanel1.Controls)
             {
                 Label iconLabel = control as Label;
-
-                if (iconLabel != null)
-                {
-                    if (iconLabel.ForeColor == iconLabel.BackColor)
-                        return;
-                }
+                if (iconLabel != null && iconLabel.ForeColor != Color.White)
+                    return;
             }
 
             DialogResult result = MessageBox.Show(
@@ -286,10 +280,11 @@ namespace PictureView
                         Text = "C",
                         TextAlign = ContentAlignment.MiddleCenter,
                         Name = "label" + (index + 1),
+                        ForeColor = tableLayoutPanel1.BackColor,
+                        BackColor = tableLayoutPanel1.BackColor
                     };
 
                     lbl.Click += label1_Click;
-
                     labels[index] = lbl;
                     tableLayoutPanel1.Controls.Add(lbl, col, row);
                     index++;
@@ -307,21 +302,28 @@ namespace PictureView
             }
         }
 
-        private void ChangePanelColor(Color color)
+        private void ChangePanelColor(Color newColor)
         {
-            tableLayoutPanel1.BackColor = color;
-
-            bool isDark = color.GetBrightness() < 0.5f;
-            Color textColor = isDark ? Color.White : Color.Black;
-
-            foreach (Label lbl in labels)
-            {
-                if (lbl.ForeColor != Color.Black)
-                    lbl.ForeColor = textColor;
-            }
-
-            Properties.Settings.Default.PanelColor = color;
+            tableLayoutPanel1.BackColor = newColor;
+            Properties.Settings.Default.PanelColor = newColor;
             Properties.Settings.Default.Save();
+
+            foreach (Control control in tableLayoutPanel1.Controls)
+            {
+                if (control is Label lbl)
+                {
+                    lbl.BackColor = newColor;
+
+                    if (lbl.ForeColor == Color.White)
+                    {
+                        lbl.ForeColor = Color.White;
+                    }
+                    else
+                    {
+                        lbl.ForeColor = newColor;
+                    }
+                }
+            }
         }
     }
 }
