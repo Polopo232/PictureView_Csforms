@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Windows.Forms;
 
 namespace PictureView
@@ -45,12 +46,12 @@ namespace PictureView
             };
 
             // Buttons
-            showButton = new Button { Text = "Show" };
+            showButton = new Button { Text = "Import" };
             clearButton = new Button { Text = "Clear" };
             backgroundButton = new Button { Text = "Background" };
-            closeButton = new Button { Text = "Close" };
-            zoomInButton = new Button { Text = "Zoom In" };
-            zoomOutButton = new Button { Text = "Zoom Out" };
+            closeButton = new Button { Text = "Exit" };
+            zoomInButton = new Button { Text = "+" };
+            zoomOutButton = new Button { Text = "-" };
             saveButton = new Button { Text = "Save" };
             colorButton = new Button { Text = "Pen Color" };
 
@@ -64,15 +65,18 @@ namespace PictureView
                 b.Size = new Size(buttonWidth, buttonHeight);
 
             // Add a panel
+            topPanel.Controls.Add(showButton);
+            topPanel.Controls.Add(saveButton);
+            topPanel.Controls.Add(clearButton);
+
             topPanel.Controls.Add(zoomInButton);
             topPanel.Controls.Add(zoomOutButton);
-            topPanel.Controls.Add(showButton);
-            topPanel.Controls.Add(clearButton);
-            topPanel.Controls.Add(saveButton);
-            topPanel.Controls.Add(backgroundButton);
-            topPanel.Controls.Add(colorButton);
-            topPanel.Controls.Add(stretchCheckBox);
+
             topPanel.Controls.Add(drawCheckBox);
+            topPanel.Controls.Add(colorButton);
+            topPanel.Controls.Add(backgroundButton);
+            
+            topPanel.Controls.Add(stretchCheckBox);
 
             Controls.Add(topPanel);
 
@@ -139,7 +143,18 @@ namespace PictureView
         {
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                pictureBox.Image = Image.FromFile(openFileDialog.FileName);
+                using (Image loaded = Image.FromFile(openFileDialog.FileName))
+                {
+                    Bitmap compatible = new Bitmap(loaded.Width, loaded.Height, PixelFormat.Format32bppArgb);
+                    using (Graphics g = Graphics.FromImage(compatible))
+                    {
+                        g.DrawImage(loaded, 0, 0, loaded.Width, loaded.Height);
+                    }
+
+                    pictureBox.Image?.Dispose();
+                    pictureBox.Image = compatible;
+                }
+
                 zoomFactor = 1.0f;
                 ApplyZoom();
             }
@@ -196,6 +211,37 @@ namespace PictureView
 
             pictureBox.Invalidate();
         }
+        private Point GetImagePoint(Point controlPoint)
+        {
+            if (pictureBox.Image == null) return controlPoint;
+
+            float imgX, imgY;
+
+            if (stretchCheckBox.Checked && pictureBox.SizeMode == PictureBoxSizeMode.StretchImage)
+            {
+                imgX = controlPoint.X * (float)pictureBox.Image.Width / pictureBox.ClientSize.Width;
+                imgY = controlPoint.Y * (float)pictureBox.Image.Height / pictureBox.ClientSize.Height;
+            }
+            else if (pictureBox.SizeMode == PictureBoxSizeMode.Normal)
+            {
+                imgX = controlPoint.X + picturePanel.AutoScrollPosition.X;
+                imgY = controlPoint.Y + picturePanel.AutoScrollPosition.Y;
+            }
+            else
+            {
+                float scale = System.Math.Min(
+                    (float)pictureBox.ClientSize.Width / pictureBox.Image.Width,
+                    (float)pictureBox.ClientSize.Height / pictureBox.Image.Height
+                );
+                float offsetX = (pictureBox.ClientSize.Width - pictureBox.Image.Width * scale) / 2;
+                float offsetY = (pictureBox.ClientSize.Height - pictureBox.Image.Height * scale) / 2;
+
+                imgX = (controlPoint.X - offsetX) / scale;
+                imgY = (controlPoint.Y - offsetY) / scale;
+            }
+
+            return new Point((int)imgX, (int)imgY);
+        }
 
         private void SaveButton_Click(object sender, EventArgs e)
         {
@@ -205,10 +251,12 @@ namespace PictureView
             {
                 sfd.Title = "Save picture";
                 sfd.Filter = "PNG Image|*.png|JPEG Image|*.jpg|Bitmap Image|*.bmp";
-
                 if (sfd.ShowDialog() == DialogResult.OK)
                 {
-                    pictureBox.Image.Save(sfd.FileName);
+                    ImageFormat format = sfd.FileName.EndsWith(".png") ? ImageFormat.Png :
+                                         sfd.FileName.EndsWith(".jpg") ? ImageFormat.Jpeg : ImageFormat.Bmp;
+
+                    pictureBox.Image.Save(sfd.FileName, format);
                     MessageBox.Show("Image saved!", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
@@ -225,21 +273,52 @@ namespace PictureView
         private void PictureBox_MouseDown(object sender, MouseEventArgs e)
         {
             if (!drawingEnabled || pictureBox.Image == null) return;
+
             isDrawing = true;
-            lastPoint = e.Location;
+            lastPoint = GetImagePoint(e.Location);
         }
 
         private void PictureBox_MouseMove(object sender, MouseEventArgs e)
         {
             if (!isDrawing || pictureBox.Image == null) return;
 
-            using (Graphics g = Graphics.FromImage(pictureBox.Image))
+            Point currentPoint = GetImagePoint(e.Location);
+            Bitmap drawable = EnsureDrawableImage(pictureBox.Image);
+
+            using (Graphics g = Graphics.FromImage(drawable))
             {
-                Pen pen = new Pen(penColor, penWidth);
-                g.DrawLine(pen, lastPoint, e.Location);
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                using (Pen pen = new Pen(penColor, penWidth))
+                {
+                    g.DrawLine(pen, lastPoint, currentPoint);
+                }
             }
+
+            if (pictureBox.Image != drawable)
+            {
+                pictureBox.Image?.Dispose();
+                pictureBox.Image = drawable;
+            }
+
             pictureBox.Invalidate();
-            lastPoint = e.Location;
+            lastPoint = currentPoint;
+        }
+
+        private Bitmap EnsureDrawableImage(Image source)
+        {
+            if (source is Bitmap bmp &&
+                (bmp.PixelFormat == PixelFormat.Format32bppArgb ||
+                 bmp.PixelFormat == PixelFormat.Format24bppRgb ||
+                 bmp.PixelFormat == PixelFormat.Format32bppPArgb))
+            {
+                return bmp;
+            }
+            Bitmap compatible = new Bitmap(source.Width, source.Height, PixelFormat.Format32bppArgb);
+            using (Graphics g = Graphics.FromImage(compatible))
+            {
+                g.DrawImage(source, 0, 0, source.Width, source.Height);
+            }
+            return compatible;
         }
 
         private void PictureBox_MouseUp(object sender, MouseEventArgs e)
